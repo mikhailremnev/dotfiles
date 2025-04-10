@@ -1,0 +1,633 @@
+
+let mapleader = " "    " map <leader> to space. The <leader> is a custom key used in many plugin shortcuts.
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" ┏┓╻┏━┓╺┳╸┏━╸┏━┓
+" ┃┗┫┃ ┃ ┃ ┣╸ ┗━┓
+" ╹ ╹┗━┛ ╹ ┗━╸┗━┛
+" NOTES
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Partly from here:
+"  https://github.com/sagarrakshe/dotvim/blob/master/vimrc
+" Partly from here:
+"  https://github.com/sbinet/dot-config/blob/80a6d6ab53dc098c3759d58ead81e7f244f7f27a/vim/vimrc
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" ┏━╸┏━┓╻  ┏━┓┏━┓┏━┓┏━╸╻ ╻┏━╸┏┳┓┏━╸
+" ┃  ┃ ┃┃  ┃ ┃┣┳┛┗━┓┃  ┣━┫┣╸ ┃┃┃┣╸ 
+" ┗━╸┗━┛┗━╸┗━┛╹┗╸┗━┛┗━╸╹ ╹┗━╸╹ ╹┗━╸
+" COLORSCHEME
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+" If 24-bit colors are supported, use 24-bit colors
+if (has("termguicolors"))
+  set termguicolors
+endif
+
+" Set terminal to 256 colors
+" (does not conflict with termguicolors, can be used together)
+set t_Co=256
+
+" NOTE: It seems this is no longer necessary in tmux 3.5a
+if &term =~ '256color'
+  " disable Background Color Erase (BCE) so that color schemes
+  " render properly when inside 256-color tmux and GNU screen.
+  " see also http://snk.tuxfamily.org/log/vim-256color-bce.html
+  set t_ut=
+endif
+
+" set background=dark
+
+" Monokai theme from TextMate and SublimeText 3
+" colorscheme molokai  " https://github.com/tomasr/molokai
+colorscheme jellybeans " https://github.com/nanotech/jellybeans.vim
+
+" Default themes that I use sometimes
+" colorscheme industry  " Best for viewing diffs
+" colorscheme morning   " Best if you need theme with white bg
+" colorscheme peachpuff " Light scheme with peach (yellowish) background
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" General options
+" ┏━╸┏━╸┏┓╻┏━╸┏━┓┏━┓╻   ┏━┓┏━┓╺┳╸╻┏━┓┏┓╻┏━┓
+" ┃╺┓┣╸ ┃┗┫┣╸ ┣┳┛┣━┫┃   ┃ ┃┣━┛ ┃ ┃┃ ┃┃┗┫┗━┓
+" ┗━┛┗━╸╹ ╹┗━╸╹┗╸╹ ╹┗━╸ ┗━┛╹   ╹ ╹┗━┛╹ ╹┗━┛
+""""""""""""""""""""""""""""""""""""""""""""""""
+"───────────────────────
+" Typical options that 
+" are often included
+" by default in the
+" /etc/vimrc
+"───────────────────────
+
+syntax on
+
+" have Vim jump to the last position when reopening a file
+if has("autocmd")
+  autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+
+set nocompatible              " be iMproved, required for Vundle
+
+"───────────────────────
+" Options added by me.
+"
+" For details, run
+" :help options
+"───────────────────────
+
+set encoding  =utf-8
+set history   =5000 " Remember more commands and search history
+set undolevels=5000 " Use many more levels of undo
+set ruler           " Show line and column of the cursor position at the bottom right
+set incsearch       " Show search results dynamically
+
+"" accelerate scrolling
+set ttyfast         " assume fast terminal connection
+set lazyredraw      " do not redraw while running macro
+
+set autoread        " automatically refresh unchanged file if it is changed outside of vim.
+
+set laststatus=2    " always show a status line, even if there is only one window open
+set showcmd         " show the command we're typing in the bottom right corner
+set showfulltag     " show full completion tags in Ctrl+N menu
+set showmode        " show Insert/Replace/Visual mode indicator all the time
+
+set backspace=indent,eol,start " allow backspacing over autoindent, line breaks and start of insert
+
+set cursorline      " highlight current line
+set cursorcolumn    " highlight current column
+set colorcolumn=80  " highlight column 80
+
+set number          " show line numbers
+
+if !&scrolloff
+  set scrolloff=1   " keep at least X lines above/below
+  " set scrolloff=999 " Keep cursor in the center
+endif
+if !&sidescrolloff
+  set sidescrolloff=5
+endif
+set display+=lastline
+
+if &history < 1000
+  set history=1000
+endif
+if &tabpagemax < 50
+  set tabpagemax=50
+endif
+" Save session information in viminfo file.
+if !empty(&viminfo)
+  set viminfo^=!
+endif
+
+" Enable mouse (a -> all modes)
+set mouse=a
+
+set nrformats-=octal  " Consider 010 as a decimal number when using Ctrl-A, Ctrl-X
+set nrformats+=blank  " Consider "-232" as negative, "RS-232" as positive when using Ctrl-A, Ctrl-X
+
+" https://vimways.org/2018/the-power-of-diff/
+" Use better (but slightly slower) diff algorithm (algorithm:patience)
+" Also try to compare corresponding indented blocks (indent-heuristic)
+if has("patch-8.1.0360")
+  set diffopt+=internal,algorithm:patience,indent-heuristic
+endif
+
+""""""""""""""""""""""""
+""" COMMENTS INSERTION
+""""""""""""""""""""""""
+
+if has("autocmd")
+  " Don't extend comment automatically,
+  " see :help fo-table
+  " autocmd BufNewFile,BufRead * setlocal formatoptions-=cro
+  autocmd BufNewFile,BufRead * setlocal formatoptions+=r
+  
+  " https://stackoverflow.com/questions/10726373/auto-comment-new-line-in-vim-only-for-block-comments
+  " Do not continue line comments (// and #) on a newline
+  autocmd FileType * setlocal comments-=:// comments+=f://
+  autocmd FileType * setlocal comments-=:# comments+=f:#
+endif
+
+""""""""""""""""""""""""
+""" INDENT OPTIONS
+""""""""""""""""""""""""
+
+" Add same line (but with '2' replaced to '4') to ~/.vim/after/indent/python.vim to fix python indent
+set softtabstop=2 tabstop=2 shiftwidth=2
+set expandtab       " Replace tabs with spaces
+set smarttab        " Forces use of shiftwidth and tabstop
+
+set autoindent      " always set autoindenting on
+set copyindent      " copy the previous indentation on autoindenting
+set shiftround      " use multiple of shiftwidth when indenting with '<' and '>'
+
+set foldmethod=indent " Fold indented blocks automatically
+" Use zR to open all folds, zM to close, zo to open current fold, zc to close.
+
+""""""""""""""""""""""""
+""" CLIPBOARD
+""""""""""""""""""""""""
+
+"""
+" Sync vim clipboard and 'real' clipboard
+" Requires vim-gtk (or vim compiled with clipboard flags)
+" (can be checked with   vim --version   )
+"""
+if has('clipboard')
+  if has('X11')
+    set clipboard=unnamedplus
+  else
+    set clipboard=unnamed
+  endif
+endif
+
+"""
+" Stop vim from clearing clipboard at exit or suspend
+" Uses xsel (sudo aptitude install xsel)
+"""
+" Exiting
+autocmd VimLeave * call system("xsel -ib", getreg('+'))
+" Suspending with Ctrl+Z
+noremap <C-z> :call system("xsel -ib", getreg('+'))<cr>:suspend<cr>
+
+""""""""""""""""""""""""
+""" uncategorised tweaks
+""""""""""""""""""""""""
+
+" Highlight matching parenthesis in more readable way.
+hi MatchParen ctermfg=208 ctermbg=none
+
+" change current line/column highlight colors, add cterm=bold if necessary
+hi CursorColumn guibg=#202020
+hi CursorLine   guibg=#202020
+
+set nohlsearch " Do not highlight search results
+" Reverse syntax colors in search highlighting
+" hi Search cterm=reverse
+
+" gtk vim automatically sets file name in tab.
+" I prefer to control name of my tab.
+set notitle
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" ╻ ╻╻┏┳┓ ┏━┓┏━╸┏━┓┏━┓╻┏━┓┏┓╻ ┏━┓┏━┓╺┳╸╻┏━┓┏┓╻┏━┓
+" ┃┏┛┃┃┃┃ ┗━┓┣╸ ┗━┓┗━┓┃┃ ┃┃┗┫ ┃ ┃┣━┛ ┃ ┃┃ ┃┃┗┫┗━┓
+" ┗┛ ╹╹ ╹ ┗━┛┗━╸┗━┛┗━┛╹┗━┛╹ ╹ ┗━┛╹   ╹ ╹┗━┛╹ ╹┗━┛
+" VIM SESSION OPTIONS
+" (when saving with :mksession)
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+" If we store global values, there might be errors with mksession after
+" changing vimrc (https://stackoverflow.com/a/1651061)
+set ssop-=options   " do not store global and local values in a session
+" set ssop-=folds     " do not store folds
+
+" https://stackoverflow.com/questions/37552913/vim-how-to-keep-folds-on-save
+" augroup remember_folds
+"   autocmd!
+"   autocmd BufWinLeave ?* mkview 1
+"   autocmd BufWinEnter ?* silent! loadview 1
+" augroup END
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" KEY MAPPINGS (HOTKEYS? SHORTCUTS? BINDINGS?)
+"
+"  ╻┏ ┏━╸╻ ╻ ┏┳┓┏━┓┏━┓┏━┓╻┏┓╻┏━╸┏━┓
+"  ┣┻┓┣╸ ┗┳┛ ┃┃┃┣━┫┣━┛┣━┛┃┃┗┫┃╺┓┗━┓
+"  ╹ ╹┗━╸ ╹  ╹ ╹╹ ╹╹  ╹  ╹╹ ╹┗━┛┗━┛
+"
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+""""""""""""""""""""""""
+" It is always recommended to use noremap instead of map:
+" (that is, non-recursive mapping instead of recursive)
+" https://learnvimscriptthehardway.stevelosh.com/chapters/05.html
+""""""""""""""""""""""""
+
+" append semi-colon at the end of the line when pressing Enter
+" inoremap ;<cr> <end>;<cr>
+
+" Distraction-free mode (uses Goyo plugin)
+nnoremap <silent> <F5> :Goyo<CR>
+
+" save keystroke
+nnoremap ; :
+
+" Q enters Ex mode, which is never necessary
+nnoremap Q <ESC>
+
+" OSC yank
+nmap <leader>c <Plug>OSCYankOperator
+nmap <leader>cc <leader>c_
+vmap <leader>c <Plug>OSCYankVisual
+let g:oscyank_osc52      = "\x1b]52;;%s\x07"  " the OSC52 format string to use
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" ┏━┓┏━╸┏━┓╻┏━┓╺┳╸┏━┓     ╻ ╻┏━┓╺┳╸╻┏ ┏━╸╻ ╻┏━┓
+" ┗━┓┃  ┣┳┛┃┣━┛ ┃ ┗━┓ ╺╋╸ ┣━┫┃ ┃ ┃ ┣┻┓┣╸ ┗┳┛┗━┓
+" ┗━┛┗━╸╹┗╸╹╹   ╹ ┗━┛     ╹ ╹┗━┛ ╹ ╹ ╹┗━╸ ╹ ┗━┛
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+function! GetVisual()
+  """
+  "" Get contents of a visual selection
+  """
+  try
+    let v_save = @v
+    " gv opens visual selection with previous area
+    " "v specifies to use register @v
+    " y makes a copy to that register
+    normal! gv"vy
+    return @v
+  finally
+    let @v = v_save
+  endtry
+endfunction
+
+" range keyword makes sure that the function is called once for all selection,
+" not once for each line of the selection
+fun! CenterMe() range
+  """
+  ""
+  "" CenterMe -- center text within visual selection
+  ""     Source: https://stackoverflow.com/questions/26137838/vim-centering-text-within-selection
+  ""     According to the author:     
+  ""     * This PREVIOUSLY worked only for selection in single line, now works
+  ""       for multiline as well (but a bit buggy if resulting lines have
+  ""                              different length, TODO: check and fix).
+  ""                              and also if there are unicode characters in the input).
+  ""     * The border chars (E.g. '|') should not be selected.
+  ""     * This works only for visual-selection
+  """
+  let input  = GetVisual()
+  let out    = ''
+  let lines  = split(input, "\n")
+  for line in lines
+    let lre = '^\zs\s*\ze\S'
+    let rre = '\s*$'
+    " Combine whitespace from left and right of the text
+    let sp   = matchstr(line, lre)
+    let sp  .= matchstr(line, rre)
+    let ln   = len(sp)
+    let line = substitute(line, lre, sp[:ln/2-1], '')
+    let line = substitute(line, rre, sp[ ln/2: ], '')
+
+    if len(out) > 0
+      let out .= "\n"
+    endif
+    let out .= line
+  endfor
+  let ve_save = &virtualedit
+  let v_save = @v
+  let &virtualedit = 'all'
+  call setreg('v', out, visualmode())
+  normal! gvx"vP
+  " let @v = v_save
+  let &virtualedit = ve_save
+endf
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+" based on https://vim.fandom.com/wiki/Easily_switch_between_source_and_header_file
+function! SwitchSourceHeader()
+  """
+  ""
+  "" SwitchSourceHeader -- jump between C/C++ header and source files.
+  ""   Sometimes source and header files are in same directory,
+  ""   sometimes they are separated in src/ and include/ subdirectories.
+  ""   This function takes care of both cases.
+  ""   
+  ""   It also accounts for different C/C++ file extensions
+  ""
+  "" TODO: Currently this function pollutes path variable,
+  ""       which might possibly lead to issues?
+  ""
+  """
+  "=== Add current vim directory to path
+  set path+=
+  " set path+=** " Search in every subdirectory
+  "=== Add include/src subdirectories to path
+  let $vim_tmp_src_dir     = expand("%:h") . "/../src/"
+  set path+=$vim_tmp_src_dir
+  let $vim_tmp_include_dir = expand("%:h") . "/../include/"
+  set path+=$vim_tmp_include_dir
+  "=== Determine file extension and search for the file
+  if (expand ("%:e") == "c" || expand ("%:e") == "cc" || expand ("%:e") == "cpp")
+    " Open the first file with matching extension
+    " https://vi.stackexchange.com/questions/24681/find-multiple-file-names
+    try 
+      find %:t:r.h   |
+    catch /^Vim(find):E345:/ | 
+      try
+        find %:t:r.hpp  |
+      catch /^Vim(find):E345:/ | 
+        echoerr "E345: Can't find header corresponding to this src file"
+      endtry
+    endtry
+  elseif (expand ("%:e") == "h" || expand ("%:e") == "hpp")
+    " Open the first file with matching extension
+    " https://vi.stackexchange.com/questions/24681/find-multiple-file-names
+    try 
+      find %:t:r.c   |
+    catch /^Vim(find):E345:/ | 
+      try
+        find %:t:r.cc  |
+      catch /^Vim(find):E345:/ | 
+        try
+          find %:t:r.cpp |
+        catch /^Vim(find):E345:/ | 
+          echoerr "E345: Can't find source file corresponding to this header"
+        endtry
+      endtry
+    endtry
+  endif
+endfunction
+
+nmap <F4> :call SwitchSourceHeader()<CR>
+
+" Put command output at the cursor (with \n characters removed)
+" https://superuser.com/questions/457944/vim-r-in-cursor-position
+function! InlineCommand()
+  " TODO: It seems that input supports only one completion type at a time.
+  "       so I can't tab-complete both shell commands and filenames
+  "       (might be fixable with customlist, see :help command-completion )
+  let l:cmd = input('Command: ', '', 'file')
+  let l:output = system(l:cmd)
+  let l:output = substitute(l:output, '[\r\n]*$', '', '')
+  execute 'normal i' . l:output
+endfunction
+
+nmap <silent> <Leader>e :call InlineCommand()<CR>
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+" ┏━╸╻ ╻┏━┓╻╻  ╻  ╻┏━╸   ╻┏ ┏━╸╻ ╻┏┳┓┏━┓┏━┓┏━┓╻┏┓╻┏━╸
+" ┃  ┗┳┛┣┳┛┃┃  ┃  ┃┃     ┣┻┓┣╸ ┗┳┛┃┃┃┣━┫┣━┛┣━┛┃┃┗┫┃╺┓
+" ┗━╸ ╹ ╹┗╸╹┗━╸┗━╸╹┗━╸   ╹ ╹┗━╸ ╹ ╹ ╹╹ ╹╹  ╹  ╹╹ ╹┗━┛
+" Cyrillic keymapping
+""""""""""""""""""""""""""""""""""""""""""""""""
+" Basically, make sure that vim works correctly even if keyboard layout
+" is switched to Russian
+
+""""""""""""""""""""""""
+
+" Base mapping, valid in most cases
+" From: https://habr.com/ru/post/321902/
+set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯЖ;ABCDEFGHIJKLMNOPQRSTUVWXYZ:,фисвуапршолдьтщзйкыегмцчняж;abcdefghijklmnopqrstuvwxyz\;,№;#
+
+""""""""""""""""""""""""
+
+" If there are cyrillic characters in the input,
+" additional special mappings are activated and
+" they are turned off once we get latin input
+" Special cases, 
+" This is necessary because Russian keyboard layout
+" maps Shift+6 to ':' instead of '^', so we have to fix that.
+
+function! SwitchLayoutToRU()
+  " Shift + 2
+  nnoremap " @
+  " Shift + 4
+  nnoremap ; $
+  " Shift + 6
+  nnoremap : ^
+  " Shift + 7
+  nnoremap ? &
+  " Bottom right button
+  nnoremap . /
+  nnoremap , ?
+endfunction
+
+function! SwitchLayoutToEN()
+  nunmap "
+  nunmap :
+  nunmap ?
+  nunmap .
+  nunmap ,
+  nnoremap ; :
+endfunction
+
+""""""""""""""""""""""""
+" Trigget the functions from above on pressing j/k/о/л
+
+" Note that here I added 'g' to move up and down in the same wrapped line!
+" If you don't need this behaviour, just remove g
+nnoremap j gj<cmd>silent!call SwitchLayoutToEN()<CR>
+nnoremap k gk<cmd>silent!call SwitchLayoutToEN()<CR>
+
+" о -> j -> gj
+nnoremap о gj<cmd>silent!call SwitchLayoutToRU()<CR>
+nnoremap л gk<cmd>silent!call SwitchLayoutToRU()<CR>
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+""" GO LANGUAGE OPTIONS
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+" " set gofmt_command=goimports
+" call plug#begin()
+" Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+" call plug#end()
+
+""""""""""""""""""""""""""""""""""""
+" ┏━┓╻  ╻ ╻┏━╸╻┏┓╻┏━┓
+" ┣━┛┃  ┃ ┃┃╺┓┃┃┗┫┗━┓
+" ╹  ┗━╸┗━┛┗━┛╹╹ ╹┗━┛
+" Plugins
+""""""""""""""""""""""""""""""""""""
+" NOTE: Generally, something like
+"   :help plugin-name
+" will show plugin documentation
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+""" VUNDLE (PLUGIN MANAGER) SETUP
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+filetype off                  " required for Vundle
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+""""""""""""""""""""""""""""""""""""""""""""""""
+""" ACTUAL PLUGINS
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+""" Use OSC52 sequence to modify clipboard
+Plugin 'ojroques/vim-oscyank'
+
+" Project-specific configurations are set in .ycm_extra_conf.py
+Plugin 'ycm-core/YouCompleteMe'
+let g:ycm_filetype_triggers = { 'js' : [] }
+let g:ycm_cxx_additional_flags = ['-I./include/']
+" auto closing of the preview window when the user accepts the offered completion string.
+" let g:ycm_autoclose_preview_window_after_completion=1
+" Map jump to definition/declaration feature to the <leader>g shortcut:
+nnoremap <leader>g :YcmCompleter GoToDefinitionElseDeclaration<CR>
+nnoremap <leader>d :YcmCompleter GetDoc<CR>
+nnoremap <leader>f :YcmCompleter FixIt<CR>
+" TODO: I don't remember why I have added this line.
+" Probably for YouCompleteMe compatibility
+set complete-=i " do not scan current and included files for built-in keyword completion (see :help cpt)
+
+" Press F5 to use distraction-free mode.
+Plugin 'junegunn/goyo.vim'
+
+" 'lean and mean' statusbar
+Plugin 'vim-airline/vim-airline'
+
+" Support for :S case-insensitive replacement command
+Plugin 'tpope/vim-abolish'
+
+" Interactive Twine syntax
+Plugin 'PolyCement/vim-tweego'
+
+" Plugin for very detailed alignment settings
+" Plugin 'godlygeek/tabular'
+
+""""""""""""""""""""""""
+" ╭╴╭╮┬┌┐┌┐╭_┬╭╴
+" ╶╯╵╵┴├┘├┘╰─╵╶╯
+" Snippets (use tab to trigger snippet completion)
+""""""""""""""""""""""""
+
+" In older versions of vim (< 8.0), do 
+"   cd ~/.vim/bundle/ultisnips/; git checkout 3.0; cd -
+Plugin 'SirVer/ultisnips'
+"""
+" Default hotkeys for ultisnips:
+"""
+" let g:UltiSnipsExpandTrigger = '<tab>'
+" let g:UltiSnipsJumpForwardTrigger = '<c-j>'
+let g:UltiSnipsExpandOrJumpTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
+"""
+
+" Snippets are separated from the engine. Add this if you want them:
+Plugin 'honza/vim-snippets' " (huge set of snippets for different languages)
+" See ~/.vim/bundle/vim-snippets/UltiSnips
+"
+" My personal favourite is 
+"    #!<tab>
+" for the syntax-appropriate shebang line
+
+""""""""""""""""""""""""
+""" DRAW IT plugin
+""""""""""""""""""""""""
+" https://www.drchip.org/astronaut/vim/doc/DrawIt.txt.html
+
+" Interactive ASCII drawing in vim
+" See https://github.com/vim-scripts/DrawIt
+Plugin 'vim-scripts/DrawIt'
+
+nnoremap <silent> <F12> <Plug>DrawItStart
+" <Leader> is, by default, \
+" (in my config, <Leader> is <space>)
+" DIsngl uses unicode lines, DIdbl uses unicode double lines, DIstart uses normal lines
+nnoremap <silent> <Leader>di   :DIsngl<CR>
+nnoremap <silent> <Leader>ddi1  :DIsngl<CR>
+nnoremap <silent> <Leader>ddi2  :DIdbl<CR>
+nnoremap <silent> <Leader>ddi3  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('┃','━','╋','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi4  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╏','╍','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi5  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╎','╌','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi6  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('┇','┅','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi7  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('┋','┉','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi8  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('┆','┄','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi9  :call DrawIt#SetMode('N')<CR>:call SetDrawIt('┊','┈','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi10 :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╻','╺','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi11 :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╹','╸','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi12 :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╷','╶','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi13 :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╵','╴','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi14 :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╽','╼','+','\','/','X','*')<CR>
+nnoremap <silent> <Leader>ddi15 :call DrawIt#SetMode('N')<CR>:call SetDrawIt('╿','╾','+','\','/','X','*')<CR>
+
+" To stop, use <Leader>ds                       
+
+""""""""""""""""""""""""
+""" THESAURUS plugin
+""" :help thesaurus_query.vim
+""" Use <Leader>cs to replace current word
+""""""""""""""""""""""""
+
+Plugin 'Ron89/thesaurus_query.vim'
+
+let g:tq_enabled_backends=["jeck_ru", "openoffice_en", "mthesaur_txt"]
+let g:tq_language=['en', 'ru']
+let g:tq_online_backends_timeout = 0.4
+
+""""""""""""""""""""""""
+""" MARKDOWN plugin
+""""""""""""""""""""""""
+
+Plugin 'preservim/vim-markdown'
+
+" Do not insert indentation after new list item
+let g:vim_markdown_new_list_item_indent   = 0
+let g:vim_markdown_folding_style_pythonic = 1
+" let g:vim_markdown_folding_level = 0
+" let g:vim_markdown_folding_disabled = 1
+
+""""""""""""""""""""""""
+
+" ES2015+ syntax highlighting + improved indentation
+Plugin 'pangloss/vim-javascript'
+
+" make YCM compatible with UltiSnips
+let g:ycm_key_list_select_completion   = ['<C-n>', '<Down>']
+let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
+"" Ultisnips
+let g:UltiSnipsExpandTrigger="<tab>"
+
+""""""""""""""""""""""""""""""""""""
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+" To ignore plugin indent changes, instead use:
+"filetype plugin on
+
