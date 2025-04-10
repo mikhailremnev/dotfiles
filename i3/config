@@ -67,7 +67,10 @@
 
 ########################
 # STATUS BAR
-# I am using i3status, there is also i3block alternative with more features.
+# I am using lightweight i3status, alternatives with more features are i3block and polybar
+# 
+# Alternatively, there is a lightweight Rust-based widget system that can be used:
+# https://github.com/elkowar/eww
 
 ########################
 # TOUCHPAD
@@ -435,7 +438,7 @@ set $volume_decrease "                                                         \
 set $volume_notify "                                                           \
     sleep 0.05; `# make sure that volume_increase process is called first`     \
     `# If not defined, prepare replacable notification ID`;                    \
-    if (( `cat \\"/tmp/.volume_notify.$UID\\"` <= 0 )) 2>/dev/null; then       \
+    if ! (( `cat \\"/tmp/.volume_notify.$UID\\"` > 0 )) 2>/dev/null; then       \
         notify-send --print-id \\"Volume:\\" > \\"/tmp/.volume_notify.$UID\\"; \
     fi;                                                                        \
     `# Show notification`;                                                     \
@@ -473,10 +476,11 @@ bindsym XF86MonBrightnessDown exec "                             \
 
 set $brightness_notify "                                                       \
     sleep 0.05; `# make sure that brightness_increase process is called first` \
-    `# Prepare replacable notification ID`;                                    \
-    (( `cat \\"/tmp/.brightness_notify.$UID\\"` > 0 )) 2>/dev/null ||          \
+    `# If not defined, prepare replacable notification ID`;                    \
+    if ! (( `cat \\"/tmp/.brightness_notify.$UID\\"` > 0 )) 2>/dev/null; then  \
         notify-send --print-id \\"Brightness:\\"                               \
           > \\"/tmp/.brightness_notify.$UID\\";                                \
+    fi;                                                                        \
     notify-send -e \\"Brightness: `xbacklight -get`\\"                         \
         --replace-id `cat \\"/tmp/.brightness_notify.$UID\\"`;                 \
   "
