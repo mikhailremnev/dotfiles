@@ -1,5 +1,6 @@
 
-let mapleader = " "    " map <leader> to space. The <leader> is a custom key used in many plugin shortcuts.
+let mapleader = " "         " map <leader> to space. The <leader> is a custom key used in many plugin shortcuts.
+" let maplocalleader = "\\" " separate <leader> for filetype-specific plugins
 
 """"""""""""""""""""""""""""""""""""""""""""""""
 " ┏┓╻┏━┓╺┳╸┏━╸┏━┓
@@ -20,21 +21,24 @@ let mapleader = " "    " map <leader> to space. The <leader> is a custom key use
 " COLORSCHEME
 """"""""""""""""""""""""""""""""""""""""""""""""
 
-" If 24-bit colors are supported, use 24-bit colors
-if (has("termguicolors"))
-  set termguicolors
-endif
-
-" Set terminal to 256 colors
-" (does not conflict with termguicolors, can be used together)
-set t_Co=256
-
-" NOTE: It seems this is no longer necessary in tmux 3.5a
 if &term =~ '256color'
+
+  " If 24-bit colors are supported, use 24-bit colors
+  if (has("termguicolors"))
+    set termguicolors
+  endif
+
+  " Set terminal to 256 colors
+  " (does not conflict with termguicolors, can be used together)
+  set t_Co=256
+
+  " NOTE: It seems this is no longer necessary in tmux 3.5a
+  "
   " disable Background Color Erase (BCE) so that color schemes
   " render properly when inside 256-color tmux and GNU screen.
   " see also http://snk.tuxfamily.org/log/vim-256color-bce.html
   set t_ut=
+
 endif
 
 " set background=dark
@@ -68,7 +72,7 @@ if has("autocmd")
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
 
-set nocompatible              " be iMproved, required for Vundle
+set nocompatible    " be iMproved (don't be compatible with vi)
 
 "───────────────────────
 " Options added by me.
@@ -157,12 +161,12 @@ endif
 
 " Add same line (but with '2' replaced to '4') to ~/.vim/after/indent/python.vim to fix python indent
 set softtabstop=2 tabstop=2 shiftwidth=2
-set expandtab       " Replace tabs with spaces
-set smarttab        " Forces use of shiftwidth and tabstop
+set expandtab         " Replace tabs with spaces
+set smarttab          " Forces use of shiftwidth and tabstop
 
-set autoindent      " always set autoindenting on
-set copyindent      " copy the previous indentation on autoindenting
-set shiftround      " use multiple of shiftwidth when indenting with '<' and '>'
+set autoindent        " always set autoindenting on
+set copyindent        " copy the previous indentation on autoindenting
+set shiftround        " use multiple of shiftwidth when indenting with '<' and '>'
 
 set foldmethod=indent " Fold indented blocks automatically
 " Use zR to open all folds, zM to close, zo to open current fold, zc to close.
@@ -296,8 +300,8 @@ fun! CenterMe() range
   ""     Source: https://stackoverflow.com/questions/26137838/vim-centering-text-within-selection
   ""     According to the author:     
   ""     * This PREVIOUSLY worked only for selection in single line, now works
-  ""       for multiline as well (but a bit buggy if resulting lines have
-  ""                              different length, TODO: check and fix).
+  ""       for multiline as well (but a bit buggy if some selected lines have
+  ""                              0 spaces, TODO: check and fix).
   ""                              and also if there are unicode characters in the input).
   ""     * The border chars (E.g. '|') should not be selected.
   ""     * This works only for visual-selection
@@ -311,7 +315,7 @@ fun! CenterMe() range
     " Combine whitespace from left and right of the text
     let sp   = matchstr(line, lre)
     let sp  .= matchstr(line, rre)
-    let ln   = len(sp)
+    let ln   = strchars(sp) " unlike len(), strchars() accounts for unicode characters
     let line = substitute(line, lre, sp[:ln/2-1], '')
     let line = substitute(line, rre, sp[ ln/2: ], '')
 
