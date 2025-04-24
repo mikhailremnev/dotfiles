@@ -130,7 +130,9 @@ endif
 set mouse=a
 
 set nrformats-=octal  " Consider 010 as a decimal number when using Ctrl-A, Ctrl-X
-set nrformats+=blank  " Consider "-232" as negative, "RS-232" as positive when using Ctrl-A, Ctrl-X
+if has("patch-9.1.0537")
+  set nrformats+=blank  " Consider "-232" as negative, "RS-232" as positive when using Ctrl-A, Ctrl-X
+endif
 
 " https://vimways.org/2018/the-power-of-diff/
 " Use better (but slightly slower) diff algorithm (algorithm:patience)
@@ -505,6 +507,9 @@ Plugin 'VundleVim/Vundle.vim'
 """ Use OSC52 sequence to modify clipboard
 Plugin 'ojroques/vim-oscyank'
 
+" TODO: For older versions of vim, YouCompleteMe has to be used
+"       either with version pinning (is it even possible with Vundle?)
+"       or it has to be disabled.
 " Project-specific configurations are set in .ycm_extra_conf.py
 Plugin 'ycm-core/YouCompleteMe'
 let g:ycm_filetype_triggers = { 'js' : [] }
