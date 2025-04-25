@@ -349,18 +349,19 @@ function! SwitchSourceHeader()
   ""   
   ""   It also accounts for different C/C++ file extensions
   ""
-  "" TODO: Currently this function pollutes path variable,
-  ""       which might possibly lead to issues?
-  ""
   """
-  "=== Add current vim directory to path
-  set path+=
-  " set path+=** " Search in every subdirectory
-  "=== Add include/src subdirectories to path
+  let $oldpath = &path
+
+  "=== Prepend current vim directory to path
+  set path^=
+  "=== Prepend include/src subdirectories to path
   let $vim_tmp_src_dir     = expand("%:h") . "/../src/"
-  set path+=$vim_tmp_src_dir
+  set path^=$vim_tmp_src_dir
   let $vim_tmp_include_dir = expand("%:h") . "/../include/"
-  set path+=$vim_tmp_include_dir
+  set path^=$vim_tmp_include_dir
+  "=== Search in every subdirectory
+  " set path+=**
+
   "=== Determine file extension and search for the file
   if (expand ("%:e") == "c" || expand ("%:e") == "cc" || expand ("%:e") == "cpp")
     " Open the first file with matching extension
@@ -391,6 +392,8 @@ function! SwitchSourceHeader()
       endtry
     endtry
   endif
+
+  set path=$oldpath
 endfunction
 
 nmap <F4> :call SwitchSourceHeader()<CR>
